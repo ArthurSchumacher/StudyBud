@@ -4,8 +4,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from .models import Room, Topic, Message, User
-from .forms import RoomForm, UserForm, MyUserCreationForm
+from .models import *
+from .forms import *
 
 # Create your views here.
 
@@ -150,6 +150,26 @@ def updateUser(request):
             return redirect('user-profile', pk=user.id)
 
     return render(request, 'base/update-user.html', {'form': form})
+
+@login_required(login_url='login')
+def updateMessage(request, pk):
+    message = Message.objects.get(id=pk)
+    form = MessageForm(instance=message)
+
+    if request.method == 'POST':
+        form = MessageForm(request.POST, instance=message)
+
+        if form.is_valid():
+            form.save()
+            return redirect('room', pk=message.room.id)
+    
+    context = {
+        'form': form,
+        'message': message,
+    }
+    
+    return render(request, 'base/update-message.html', context)
+
 
 @login_required(login_url='login')
 def deleteRoom(request, pk):
